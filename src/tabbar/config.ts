@@ -28,13 +28,13 @@ export const nativeTabbarList: NativeTabBarItem[] = [
     iconPath: 'static/tabbar/home.png',
     selectedIconPath: 'static/tabbar/homeHL.png',
     pagePath: 'pages/index/index',
-    text: '首页',
+    text: '导览',
   },
   {
     iconPath: 'static/tabbar/personal.png',
     selectedIconPath: 'static/tabbar/personalHL.png',
     pagePath: 'pages/me/me',
-    text: '个人',
+    text: '我的',
   },
 ]
 
@@ -42,7 +42,7 @@ export const nativeTabbarList: NativeTabBarItem[] = [
 // 如果需要配置鼓包，需要在 'tabbar/store.ts' 里面设置，最后在 `tabbar/index.vue` 里面更改鼓包的图片
 export const customTabbarList: CustomTabBarItem[] = [
   {
-    text: '首页',
+    text: '导览',
     pagePath: 'pages/index/index',
     // 注意 unocss 图标需要如下处理：（二选一）
     // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
@@ -64,13 +64,12 @@ export const customTabbarList: CustomTabBarItem[] = [
   // },
   {
     pagePath: 'pages/about/about',
-    text: '关于',
+    text: '服务',
     // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
     // 2）配置到 unocss.config.ts 的 safelist 中
     iconType: 'unocss',
     icon: 'i-carbon-menu',
     // badge: 10,
-    roles: ['admin'],
   },
   {
     pagePath: 'pages/me/me',
