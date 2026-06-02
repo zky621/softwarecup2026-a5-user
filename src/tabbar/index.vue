@@ -124,13 +124,9 @@ function getColorByIndex(index: number) {
 .border-and-fixed {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  right: auto;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  width: 100vw;
-  max-width: 390px;
-  overflow: hidden;
-  transform: translateX(-50%);
   border-top: 1px solid #eee;
   box-sizing: border-box;
 }

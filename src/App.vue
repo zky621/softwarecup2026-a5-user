@@ -48,12 +48,5 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-page,
-body,
-#app,
-uni-page-body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
+
 </style>
