@@ -18,14 +18,7 @@ const pages = {
       type: 'home',
       style: {
         navigationStyle: 'custom',
-        navigationBarTitleText: '首页',
-      },
-    },
-    {
-      path: 'pages/me/me',
-      type: 'page',
-      style: {
-        navigationBarTitleText: '我的',
+        navigationBarTitleText: '导览',
       },
     },
   ],
