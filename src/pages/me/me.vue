@@ -35,6 +35,18 @@ const services: ServiceItem[] = [
     icon: 'i-carbon-location-filled',
     url: '/pages/service/facilities',
   },
+  {
+    title: '反馈投诉',
+    desc: '意见建议或遇到的问题',
+    icon: 'i-carbon-flag',
+    url: '/pages/feedback/index',
+  },
+  {
+    title: '排队取号',
+    desc: '热门点位线上排队',
+    icon: 'i-carbon-list',
+    url: '/pages/queue/index',
+  },
 ]
 
 function go(url: string) {
@@ -149,6 +161,20 @@ function go(url: string) {
           </text>
         </view>
       </view>
+    </view>
+
+    <!-- 紧急求助 -->
+    <view class="emergency-card mt-5" @click="go('/pages/emergency/index')">
+      <view class="i-carbon-warning-filled text-28px text-[#c0392b]" />
+      <view class="ml-3">
+        <view class="text-17px text-[#c0392b] font-800">
+          紧急求助
+        </view>
+        <view class="mt-1 text-12px text-[#66756f]">
+          SOS · 医疗 · 走失 · 安保
+        </view>
+      </view>
+      <view class="i-carbon-chevron-right text-18px text-[#c0392b] ml-auto" />
     </view>
 
     <view class="section mt-5">
@@ -283,5 +309,16 @@ function go(url: string) {
   line-height: 20px;
   margin-top: 9px;
   padding: 10px 12px;
+}
+
+.emergency-card {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  background: #fce8e4;
+  padding: 16px 18px;
+  margin-left: 16px;
+  margin-right: 16px;
+  box-shadow: 0 4px 12px rgba(192,57,43,0.1);
 }
 </style>

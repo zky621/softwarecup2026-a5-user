@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import { spots } from '../shared/guide-data'
+import { computed, onMounted, ref } from 'vue'
+import { getSpots, type SpotItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -10,10 +10,23 @@ definePage({
   },
 })
 
-const currentId = ref(spots[0].id)
+const spots = ref<SpotItem[]>([])
+const currentId = ref('')
 const isPlaying = ref(true)
+const loading = ref(true)
 
-const currentSpot = computed(() => spots.find(item => item.id === currentId.value) || spots[0])
+onMounted(async () => {
+  const data = await getSpots({ limit: 10 })
+  spots.value = data.length ? data : [
+    { id: 'demo-1', name: '灵山大佛', summary: '世界最高露天青铜立像' },
+    { id: 'demo-2', name: '九龙灌浴', summary: '大型音乐动态群雕' },
+    { id: 'demo-3', name: '梵宫', summary: '佛教艺术殿堂' },
+  ] as SpotItem[]
+  currentId.value = spots.value[0]?.id || ''
+  loading.value = false
+})
+
+const currentSpot = computed(() => spots.value.find(item => item.id === currentId.value) || spots.value[0])
 
 function chooseSpot(id: string) {
   currentId.value = id
@@ -26,16 +39,19 @@ function togglePlay() {
 </script>
 
 <template>
-  <view class="page bg-[#17372f] px-4 pb-8 pt-4 text-white">
+  <view v-if="loading" class="page bg-[#17372f] px-4 pb-8 pt-4 text-white">
+    <view class="mt-20 text-center text-14px opacity-72">加载中...</view>
+  </view>
+  <view v-else class="page bg-[#17372f] px-4 pb-8 pt-4 text-white">
     <view class="player">
       <view class="text-13px opacity-75">
         正在播放
       </view>
       <view class="mt-2 text-24px font-800">
-        {{ currentSpot.name }}
+        {{ currentSpot?.name || '景点讲解' }}
       </view>
       <view class="mt-2 text-13px leading-5 opacity-78">
-        {{ currentSpot.desc }}
+        {{ currentSpot?.summary || currentSpot?.shortIntro || '' }}
       </view>
       <view class="mt-8 flex items-center justify-center" @click="togglePlay">
         <view class="play">
@@ -61,7 +77,7 @@ function togglePlay() {
             {{ spot.name }}
           </view>
           <view class="mt-1 text-12px text-[#66756f]">
-            {{ spot.time }}
+            {{ spot.tags?.join(' · ') || spot.category || '' }}
           </view>
         </view>
         <view :class="spot.id === currentId && isPlaying ? 'i-carbon-pause-filled' : 'i-carbon-play-filled-alt'" class="text-20px text-[#2b765f]" />

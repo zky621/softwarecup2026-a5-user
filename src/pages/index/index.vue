@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { routeSteps, spots } from '../shared/guide-data'
+import { onMounted, ref } from 'vue'
+import { getSpots, getNotices, getEvents, getRoutes, type SpotItem, type NoticeItem, type EventItem, type RouteItem, createSession } from '@/api/scenic'
 
 defineOptions({
   name: 'Home',
@@ -44,6 +45,30 @@ const quickActions: QuickAction[] = [
   },
 ]
 
+const spots = ref<SpotItem[]>([])
+const notices = ref<NoticeItem[]>([])
+const events = ref<EventItem[]>([])
+const topRoutes = ref<RouteItem[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  // 先初始化会话
+  createSession().catch(() => {})
+
+  // 并发加载首页数据
+  const [spotsData, noticesData, eventsData, routesData] = await Promise.all([
+    getSpots({ limit: 3 }).catch(() => [] as SpotItem[]),
+    getNotices().catch(() => [] as NoticeItem[]),
+    getEvents().catch(() => [] as EventItem[]),
+    getRoutes().catch(() => [] as RouteItem[]),
+  ])
+  spots.value = spotsData
+  notices.value = noticesData.filter(n => n.active !== false).slice(0, 2)
+  events.value = eventsData.slice(0, 3)
+  topRoutes.value = routesData.slice(0, 1)
+  loading.value = false
+})
+
 function go(url: string) {
   uni.navigateTo({ url })
 }
@@ -66,7 +91,18 @@ function go(url: string) {
         </view>
       </view>
 
-      <view class="mt-6 rounded-8px bg-white/12 p-4 backdrop-blur">
+      <!-- 公告横幅 -->
+      <view v-if="notices.length" class="mt-4">
+        <view
+          v-for="n in notices" :key="n.id"
+          class="rounded-8px px-3 py-2 mb-2"
+          :class="n.type === 'warning' ? 'bg-[rgba(255,200,50,0.2)]' : 'bg-white/12'"
+        >
+          <text class="text-12px font-600">{{ n.type === 'warning' ? '⚠️ ' : '📢 ' }}{{ n.title }}</text>
+        </view>
+      </view>
+
+      <view class="mt-4 rounded-8px bg-white/12 p-4 backdrop-blur">
         <view class="flex items-center gap-3">
           <view class="avatar-ring">
             <view class="i-carbon-user-avatar-filled text-42px" />
@@ -87,6 +123,16 @@ function go(url: string) {
           </button>
           <button class="ghost-btn" @click="go('/pages/audio/audio')">
             <view class="i-carbon-headphones text-18px" />
+          </button>
+        </view>
+        <view class="mt-3 flex gap-2">
+          <button class="secondary-btn flex-1" @click="go('/pages/map/index')">
+            <view class="i-carbon-map text-14px" />
+            地图
+          </button>
+          <button class="secondary-btn flex-1" @click="go('/pages/qrcode/index')">
+            <view class="i-carbon-qr-code text-14px" />
+            扫码
           </button>
         </view>
       </view>
@@ -112,7 +158,8 @@ function go(url: string) {
       </view>
     </view>
 
-    <view class="mt-5 px-4">
+    <!-- 推荐路线 -->
+    <view v-if="topRoutes.length" class="mt-5 px-4">
       <view class="section-title">
         推荐路线
       </view>
@@ -120,24 +167,25 @@ function go(url: string) {
         <view class="flex items-center justify-between">
           <view>
             <view class="text-18px text-[#17362e] font-700">
-              半日轻松逛
+              {{ topRoutes[0].name || '推荐游览路线' }}
             </view>
             <view class="mt-1 text-12px text-[#65746f]">
-              约 3.5 小时，适合第一次来
+              {{ topRoutes[0].duration || '约 3-4 小时' }}
             </view>
           </view>
           <view class="route-score">
-            轻松
+            {{ topRoutes[0].difficulty || '轻松' }}
           </view>
         </view>
-        <view class="grid grid-cols-4 mt-4 gap-2">
-          <view v-for="step in routeSteps" :key="step" class="route-step">
-            {{ step }}
+        <view v-if="topRoutes[0].stops?.length" class="grid grid-cols-4 mt-4 gap-2">
+          <view v-for="step in topRoutes[0].stops.slice(0, 4)" :key="step.spotName" class="route-step">
+            {{ step.spotName }}
           </view>
         </view>
       </view>
     </view>
 
+    <!-- 现在适合去 -->
     <view class="mt-5 px-4">
       <view class="mb-3 flex items-center justify-between">
         <view class="section-title">
@@ -148,7 +196,10 @@ function go(url: string) {
         </view>
       </view>
 
-      <view class="space-y-3">
+      <view v-if="loading" class="py-8 text-center text-13px text-[#66756f]">
+        加载中...
+      </view>
+      <view v-else class="space-y-3">
         <view v-for="spot in spots" :key="spot.id" class="spot-card" @click="go('/pages/spots/spots')">
           <view class="flex items-start justify-between gap-3">
             <view class="min-w-0 flex-1">
@@ -159,17 +210,31 @@ function go(url: string) {
                 </view>
               </view>
               <view class="mt-2 text-13px text-[#66746f] leading-5">
-                {{ spot.desc }}
+                {{ spot.summary || spot.shortIntro || '' }}
               </view>
             </view>
             <view class="text-right">
-              <view class="tag">
-                {{ spot.tag }}
-              </view>
-              <view class="mt-2 text-11px text-[#8a7661]">
-                {{ spot.time }}
+              <view v-if="spot.tags?.length" class="tag">
+                {{ spot.tags[0] }}
               </view>
             </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 今日演出 -->
+    <view v-if="events.length" class="mt-5 px-4">
+      <view class="section-title">
+        今日演出
+      </view>
+      <view class="mt-3 space-y-2">
+        <view v-for="ev in events" :key="ev.id" class="event-row" @click="go('/pages/service/shows')">
+          <view class="text-14px text-[#20372f] font-700">
+            {{ ev.name }}
+          </view>
+          <view class="mt-1 text-12px text-[#66756f]">
+            {{ ev.time || '' }} {{ ev.description ? '· ' + ev.description : '' }}
           </view>
         </view>
       </view>
@@ -239,6 +304,22 @@ function go(url: string) {
   color: #fff;
 }
 
+.secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
 .action-card,
 .route-panel,
 .spot-card {
@@ -249,6 +330,13 @@ function go(url: string) {
 .action-card {
   min-height: 118px;
   padding: 14px 12px;
+}
+
+.event-row {
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 14px;
+  box-shadow: 0 4px 12px rgba(29, 54, 46, 0.04);
 }
 
 .section-title {

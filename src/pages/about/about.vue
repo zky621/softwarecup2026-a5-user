@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { questions } from '../shared/guide-data'
-
 definePage({
   style: {
     navigationBarTitleText: '服务',
@@ -18,6 +16,20 @@ interface ServiceCard {
 }
 
 const services: ServiceCard[] = [
+  {
+    title: '看地图',
+    desc: '查看景区全景、当前位置和设施分布。',
+    icon: 'i-carbon-map',
+    note: '导航',
+    url: '/pages/map/index',
+  },
+  {
+    title: '扫码',
+    desc: '扫景点码听讲解，扫票码入园核验。',
+    icon: 'i-carbon-qr-code',
+    note: '扫码',
+    url: '/pages/qrcode/index',
+  },
   {
     title: '找厕所',
     desc: '看最近的卫生间、休息区和游客中心。',
@@ -40,11 +52,25 @@ const services: ServiceCard[] = [
     url: '/pages/route/route',
   },
   {
+    title: '排队取号',
+    desc: '热门点位线上取号，省去现场等待。',
+    icon: 'i-carbon-list',
+    note: '取号',
+    url: '/pages/queue/index',
+  },
+  {
     title: '问一句',
     desc: '景点、门票、停车、吃饭，直接问一句。',
     icon: 'i-carbon-chat',
     note: '随时问',
     url: '/pages/ask/ask',
+  },
+  {
+    title: '反馈投诉',
+    desc: '遇到的问题、意见建议，告诉我们。',
+    icon: 'i-carbon-flag',
+    note: '反馈',
+    url: '/pages/feedback/index',
   },
 ]
 
@@ -86,35 +112,19 @@ function go(url: string) {
       </view>
     </view>
 
+    <!-- 快捷入口 -->
     <view class="section mt-5">
       <view class="section-title">
-        常见问法
+        需要帮助？
       </view>
-      <view class="mt-3 space-y-2">
-        <view v-for="item in questions" :key="item" class="question-row" @click="go('/pages/ask/ask')">
-          {{ item }}
+      <view class="mt-4 space-y-2">
+        <view class="help-row" @click="go('/pages/feedback/index')">
+          <view class="i-carbon-flag text-20px text-[#2b765f]" />
+          <text class="text-14px text-[#41554f]">反馈与投诉</text>
         </view>
-      </view>
-    </view>
-
-    <view class="section mt-5">
-      <view class="flex items-center justify-between">
-        <view>
-          <view class="section-title">
-            今日提醒
-          </view>
-          <view class="mt-1 text-12px text-[#66756f]">
-            午后可以先去室内点位
-          </view>
-        </view>
-        <view class="i-carbon-notification text-22px text-[#2b765f]" />
-      </view>
-      <view class="notice mt-4" @click="go('/pages/spots/spots')">
-        <view class="text-15px text-[#17362e] font-800">
-          梵宫适合放在下午
-        </view>
-        <view class="mt-1 text-12px text-[#66756f] leading-5">
-          天气较热时，先进室内慢慢看，再回到户外景点。
+        <view class="help-row emergency" @click="go('/pages/emergency/index')">
+          <view class="i-carbon-warning-filled text-20px text-[#c0392b]" />
+          <text class="text-14px text-[#c0392b] font-700">紧急求助</text>
         </view>
       </view>
     </view>
@@ -166,20 +176,16 @@ function go(url: string) {
   font-weight: 800;
 }
 
-.question-row,
-.notice {
+.help-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   border-radius: 8px;
   background: #f7faf8;
-}
-
-.question-row {
-  color: #41554f;
-  font-size: 14px;
-  line-height: 20px;
-  padding: 12px 14px;
-}
-
-.notice {
   padding: 14px;
+}
+
+.help-row.emergency {
+  background: #fce8e4;
 }
 </style>

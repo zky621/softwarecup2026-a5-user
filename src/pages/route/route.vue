@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import { routeSteps } from '../shared/guide-data'
+import { onMounted, ref } from 'vue'
+import { getRoutes, type RouteItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -10,214 +10,105 @@ definePage({
   },
 })
 
-const routeOptions = [
-  { name: '半日轻松逛', time: '3.5h', level: '轻松', note: '第一次来、带孩子或长辈同行', steps: routeSteps },
-  { name: '两小时重点看', time: '2h', level: '省时', note: '赶时间时先看大佛和九龙灌浴', steps: ['入口', '灵山大佛', '九龙灌浴', '出口'] },
-  { name: '慢慢听讲解', time: '4h', level: '慢游', note: '多留讲解和休息时间', steps: ['入口', '灵山大佛', '梵宫', '休息区'] },
-]
+const routes = ref<RouteItem[]>([])
+const expandedId = ref<string | null>(null)
+const loading = ref(true)
 
-const selectedIndex = ref(0)
-const selectedRoute = computed(() => routeOptions[selectedIndex.value])
+onMounted(async () => {
+  const data = await getRoutes()
+  routes.value = data.length ? data : [
+    {
+      id: 'demo-1',
+      name: '半日轻松逛（默认）',
+      description: '适合第一次来的游客',
+      duration: '约 3.5 小时',
+      difficulty: '轻松',
+      stops: [
+        { spotName: '入口', stayDuration: '—', description: '扫码入园' },
+        { spotName: '灵山大佛', stayDuration: '35分钟', description: '登顶抱佛脚' },
+        { spotName: '九龙灌浴', stayDuration: '20分钟', description: '看表演' },
+        { spotName: '梵宫', stayDuration: '45分钟', description: '室内参观' },
+      ],
+    },
+  ]
+  loading.value = false
+})
 
-function selectRoute(index: number) {
-  selectedIndex.value = index
+function toggleExpand(id: string) {
+  expandedId.value = expandedId.value === id ? null : id
 }
 
-function go(url: string) {
-  uni.navigateTo({ url })
+function goBack() {
+  uni.navigateBack()
 }
 </script>
 
 <template>
-  <view class="page bg-[#f4f7f3] px-4 pb-8 pt-4">
-    <view class="panel">
-      <view class="text-12px text-[#347561] font-700">
-        推荐路线
-      </view>
-      <view class="mt-2 text-24px text-[#17362e] font-800">
-        {{ selectedRoute.name }}
-      </view>
-      <view class="mt-2 text-13px text-[#66756f] leading-5">
-        {{ selectedRoute.note }}。节奏不赶，重点点位都能看到。
-      </view>
-      <view class="chips mt-4">
-        <view
-          v-for="(item, index) in routeOptions"
-          :key="item.name"
-          class="chip"
-          :class="{ active: index === selectedIndex }"
-          @click="selectRoute(index)"
-        >
-          {{ item.name }}
-        </view>
-      </view>
-      <view class="grid grid-cols-3 mt-4 gap-3">
-        <view class="stat">
-          <view class="num">
-            {{ selectedRoute.time }}
-          </view>
-          <view class="label">
-            用时
-          </view>
-        </view>
-        <view class="stat">
-          <view class="num">
-            {{ selectedRoute.steps.length }}
-          </view>
-          <view class="label">
-            点位
-          </view>
-        </view>
-        <view class="stat">
-          <view class="num">
-            {{ selectedRoute.level }}
-          </view>
-          <view class="label">
-            强度
-          </view>
-        </view>
-      </view>
+  <view class="route-page min-h-screen bg-[#f4f7f3] pb-8">
+    <view class="flex items-center gap-3 px-4 pt-4 pb-2">
+      <button class="back-btn" @click="goBack">◀</button>
+      <view class="text-20px text-[#17362e] font-800">游览路线</view>
     </view>
 
-    <view class="panel mt-4">
-      <view class="title">
-        走法
-      </view>
-      <view class="timeline mt-4">
-        <view v-for="(step, index) in selectedRoute.steps" :key="step" class="step">
-          <view class="dot">
-            {{ index + 1 }}
-          </view>
-          <view>
-            <view class="text-16px text-[#20372f] font-800">
-              {{ step }}
+    <view v-if="loading" class="mt-8 text-center text-13px text-[#66756f]">
+      加载中...
+    </view>
+    <view v-else class="px-4 space-y-3">
+      <view v-for="route in routes" :key="route.id" class="route-card" :class="{ expanded: expandedId === route.id }">
+        <view class="p-4" @click="toggleExpand(route.id)">
+          <view class="flex items-start justify-between">
+            <view class="min-w-0 flex-1">
+              <view class="text-17px text-[#20372f] font-800">
+                {{ route.name }}
+              </view>
+              <view class="mt-1 text-12px text-[#66756f]">
+                {{ route.description || '' }}
+              </view>
             </view>
-            <view class="mt-1 text-12px text-[#66756f]">
-              {{ index === 0 ? '扫码入园后开始' : '按现场指引前往' }}
+            <view class="route-badge">
+              {{ route.difficulty || '中等' }}
+            </view>
+          </view>
+          <view class="flex gap-4 mt-2 text-12px text-[#66756f]">
+            <text>⏱ {{ route.duration || '—' }}</text>
+            <text v-if="route.stops?.length">📍 {{ route.stops.length }} 站</text>
+          </view>
+        </view>
+
+        <view v-if="expandedId === route.id && route.stops?.length" class="border-t border-[#edf1ee] px-4 py-3">
+          <view v-for="(stop, idx) in route.stops" :key="stop.spotName" class="flex gap-3 mb-3">
+            <view class="flex flex-col items-center w-6">
+              <view class="w-5 h-5 rounded-full bg-[#1f6d58] text-white text-11px font-700 flex items-center justify-center">
+                {{ idx + 1 }}
+              </view>
+              <view v-if="idx < route.stops.length - 1" class="w-0.5 flex-1 bg-[#dfe9e4] mt-1" />
+            </view>
+            <view class="min-w-0 flex-1 pb-2">
+              <view class="text-15px text-[#20372f] font-700">{{ stop.spotName }}</view>
+              <view v-if="stop.stayDuration" class="text-11px text-[#1f6d58]">{{ stop.stayDuration }}</view>
+              <view v-if="stop.description" class="text-12px text-[#66756f]">{{ stop.description }}</view>
             </view>
           </view>
         </view>
       </view>
-    </view>
-
-    <view class="actions mt-4">
-      <button class="primary-btn" @click="go('/pages/audio/audio')">
-        <view class="i-carbon-headphones text-18px" />
-        边走边听
-      </button>
-      <button class="secondary-btn" @click="go('/pages/service/facilities')">
-        <view class="i-carbon-location text-18px" />
-        找附近
-      </button>
     </view>
   </view>
 </template>
 
 <style scoped lang="scss">
-.page {
-  min-height: 100vh;
+.route-page { min-height: 100vh; background: #f4f7f3; }
+.back-btn {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 0; background: #e8f2ed; color: #1f6d58; font-size: 14px;
 }
-
-.panel {
-  border-radius: 8px;
-  background: #fff;
-  padding: 18px;
-  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
+.route-card {
+  border-radius: 8px; background: #fff; overflow: hidden;
+  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
 }
-
-.chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-}
-
-.chip {
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background: #f7faf8;
-  color: #48645b;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 8px 11px;
-}
-
-.chip.active {
-  background: #1f6d58;
-  color: #fff;
-}
-
-.title {
-  color: #17362e;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.stat {
-  border-radius: 8px;
-  background: #f7faf8;
-  padding: 12px 8px;
-  text-align: center;
-}
-
-.num {
-  color: #1f6d58;
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.label {
-  margin-top: 3px;
-  color: #7a8b85;
-  font-size: 11px;
-}
-
-.step {
-  display: flex;
-  gap: 12px;
-  padding: 0 0 18px;
-}
-
-.dot {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #1f6d58;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.primary-btn,
-.secondary-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 42px;
-  border: 0;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 800;
-  gap: 6px;
-  line-height: 42px;
-}
-
-.primary-btn {
-  background: #1f6d58;
-  color: #fff;
-}
-
-.secondary-btn {
-  background: #fff;
-  color: #1f6d58;
+.route-card.expanded { box-shadow: 0 4px 16px rgba(29,54,46,0.1); }
+.route-badge {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #e5f2ec; color: #246b58; font-size: 12px; font-weight: 800;
 }
 </style>

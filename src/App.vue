@@ -4,6 +4,10 @@ import { getCurrentInstance, onMounted, onUnmounted } from 'vue'
 import { navigateToInterceptor } from '@/router/interceptor'
 import { tabbarStore } from '@/tabbar/store'
 import { permission } from '@/router/permission'
+import { useLocationTracker } from '@/hooks/useLocationTracker'
+
+// 启动位置追踪（每 30 秒上报一次位置，用于后台客流统计）
+useLocationTracker()
 
 const { proxy } = (getCurrentInstance() || {}) as any
 const router = proxy?.$router

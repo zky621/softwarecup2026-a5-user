@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { getEvents, type EventItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -9,13 +10,18 @@ definePage({
   },
 })
 
-const shows = [
-  { name: '九龙灌浴', time: '14:30', place: '九龙灌浴广场', status: '建议提前 15 分钟到' },
-  { name: '梵宫讲解', time: '15:20', place: '梵宫入口', status: '适合室内慢游' },
-  { name: '夜场灯光', time: '19:00', place: '主广场', status: '以现场开放为准' },
-]
+const events = ref<EventItem[]>([])
+const reminded = ref<string[]>([])
+const loading = ref(true)
 
-const reminded = ref(['九龙灌浴'])
+onMounted(async () => {
+  const data = await getEvents()
+  events.value = data.length ? data : [
+    { id: 'demo-1', name: '九龙灌浴', time: '每日 10:00, 14:00, 16:00', description: '大型音乐喷泉表演' },
+    { id: 'demo-2', name: '灵山吉祥颂', time: '10:35, 11:30, 14:00, 16:00', description: '梵宫圣坛' },
+  ]
+  loading.value = false
+})
 
 function toggleReminder(name: string) {
   reminded.value = reminded.value.includes(name)
@@ -34,20 +40,20 @@ function toggleReminder(name: string) {
         时间可能随天气和现场客流调整。
       </view>
     </view>
-    <view class="mt-4 space-y-3">
-      <view v-for="item in shows" :key="item.name" class="show-card">
+    <view v-if="loading" class="mt-8 text-center text-13px text-[#66756f]">
+      加载中...
+    </view>
+    <view v-else class="mt-4 space-y-3">
+      <view v-for="item in events" :key="item.id" class="show-card">
         <view class="time">
-          {{ item.time }}
+          {{ item.time || '全天' }}
         </view>
         <view class="min-w-0 flex-1">
           <view class="text-16px text-[#20372f] font-800">
             {{ item.name }}
           </view>
           <view class="mt-1 text-12px text-[#66756f]">
-            {{ item.place }}
-          </view>
-          <view class="mt-2 text-12px text-[#8c6128]">
-            {{ item.status }}
+            {{ item.spotId ? '景点 · ' + item.spotId : item.description || '' }}
           </view>
         </view>
         <button class="remind-btn" :class="{ active: reminded.includes(item.name) }" @click="toggleReminder(item.name)">
@@ -59,56 +65,28 @@ function toggleReminder(name: string) {
 </template>
 
 <style scoped lang="scss">
-.page {
-  min-height: 100vh;
+.page { min-height: 100vh; }
+.panel {
+  border-radius: 8px; background: #fff; padding: 18px;
+  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
 }
-
-.panel,
+.title { font-size: 18px; font-weight: 800; color: #17362e; }
 .show-card {
-  border-radius: 8px;
-  background: #fff;
-  padding: 18px;
-  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
+  display: flex; gap: 14px; align-items: center;
+  border-radius: 8px; background: #fff; padding: 16px;
+  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
 }
-
-.title {
-  color: #17362e;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.show-card {
-  display: flex;
-  gap: 14px;
-}
-
-.remind-btn {
-  flex: 0 0 auto;
-  width: 58px;
-  height: 34px;
-  border: 0;
-  border-radius: 8px;
-  background: #e8f2ed;
-  color: #1f6d58;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 34px;
-}
-
-.remind-btn.active {
-  background: #1f6d58;
-  color: #fff;
-}
-
 .time {
-  flex: 0 0 auto;
-  width: 58px;
-  border-radius: 8px;
-  background: #e8f2ed;
-  color: #1f6d58;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 42px;
-  text-align: center;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 64px; height: 48px; border-radius: 8px;
+  background: #e8f2ed; color: #1f6d58;
+  font-size: 12px; font-weight: 800; text-align: center;
 }
+.remind-btn {
+  height: 32px; border: 0; border-radius: 8px;
+  background: #f4f7f3; color: #66756f; font-size: 12px; font-weight: 700;
+  line-height: 32px; padding: 0 12px;
+  white-space: nowrap;
+}
+.remind-btn.active { background: #1f6d58; color: #fff; }
 </style>

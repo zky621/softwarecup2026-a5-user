@@ -134,6 +134,11 @@ export default defineManifestConfig({
     // styleIsolation: 'shared',
     usingComponents: true,
     // __usePrivacyCheck__: true,
+    permission: {
+      'scope.userLocation': {
+        desc: '用于实时客流统计和推荐附近景点',
+      },
+    },
   },
   'mp-alipay': {
     usingComponents: true,

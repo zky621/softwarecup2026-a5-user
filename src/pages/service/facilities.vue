@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import { facilities } from '../shared/guide-data'
+import { computed, onMounted, ref } from 'vue'
+import { getServices, type ServiceItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -10,13 +10,32 @@ definePage({
   },
 })
 
-const filters = ['全部', '卫生间', '休息', '餐饮']
+const filters = ['全部', '卫生间', '休息', '餐饮', '游客中心']
 const activeFilter = ref('全部')
+const allFacilities = ref<ServiceItem[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  const data = await getServices()
+  if (!data.length) {
+    // Fallback
+    allFacilities.value = [
+      { id: 'demo-1', name: '游客中心', type: '游客中心', description: '咨询、寄存、投诉建议' },
+      { id: 'demo-2', name: '卫生间', type: '卫生间', description: '靠近广场右侧' },
+      { id: 'demo-3', name: '休息区', type: '休息', description: '有座椅和饮水点' },
+      { id: 'demo-4', name: '餐饮点', type: '餐饮', description: '简餐、饮品、儿童餐' },
+    ]
+  } else {
+    allFacilities.value = data
+  }
+  loading.value = false
+})
 
 const visibleFacilities = computed(() => {
-  if (activeFilter.value === '全部')
-    return facilities
-  return facilities.filter(item => item.name.includes(activeFilter.value) || item.desc.includes(activeFilter.value))
+  if (activeFilter.value === '全部') return allFacilities.value
+  return allFacilities.value.filter(
+    item => item.name.includes(activeFilter.value) || item.type?.includes(activeFilter.value),
+  )
 })
 </script>
 
@@ -31,29 +50,30 @@ const visibleFacilities = computed(() => {
       </view>
       <view class="chips mt-4">
         <view
-          v-for="item in filters"
-          :key="item"
-          class="chip"
-          :class="{ active: item === activeFilter }"
+          v-for="item in filters" :key="item"
+          class="chip" :class="{ active: item === activeFilter }"
           @click="activeFilter = item"
         >
           {{ item }}
         </view>
       </view>
     </view>
-    <view class="mt-4 space-y-3">
-      <view v-for="item in visibleFacilities" :key="item.name" class="facility">
+    <view v-if="loading" class="mt-8 text-center text-13px text-[#66756f]">
+      加载中...
+    </view>
+    <view v-else class="mt-4 space-y-3">
+      <view v-for="item in visibleFacilities" :key="item.id || item.name" class="facility">
         <view class="i-carbon-location-filled text-22px text-[#2b765f]" />
         <view class="min-w-0 flex-1">
           <view class="text-16px text-[#20372f] font-800">
             {{ item.name }}
           </view>
           <view class="mt-1 text-12px text-[#66756f]">
-            {{ item.desc }}
+            {{ item.description || '' }}
           </view>
         </view>
         <view class="distance">
-          {{ item.distance }}
+          {{ item.distance || '—' }}
         </view>
         <button class="go-btn">
           去这
@@ -64,66 +84,32 @@ const visibleFacilities = computed(() => {
 </template>
 
 <style scoped lang="scss">
-.page {
-  min-height: 100vh;
-}
+.page { min-height: 100vh; }
 
-.panel,
-.facility {
-  border-radius: 8px;
-  background: #fff;
-  padding: 18px;
-  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
+.panel {
+  border-radius: 8px; background: #fff; padding: 18px;
+  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
 }
+.title { font-size: 18px; font-weight: 800; color: #17362e; }
 
-.title {
-  color: #17362e;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.facility {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.chips {
-  display: flex;
-  gap: 8px;
-}
-
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
-  border-radius: 999px;
-  background: #f7faf8;
-  color: #48645b;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 8px 11px;
+  padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: #f4f8f5; color: #66756f;
 }
+.chip.active { background: #1f6d58; color: #fff; }
 
-.chip.active {
-  background: #1f6d58;
-  color: #fff;
+.facility {
+  display: flex; gap: 12px; align-items: center;
+  border-radius: 8px; background: #fff; padding: 14px;
+  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
 }
-
 .distance {
-  flex: 0 0 auto;
-  color: #8c6128;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 12px; color: #66756f; white-space: nowrap;
 }
-
 .go-btn {
-  flex: 0 0 auto;
-  width: 48px;
-  height: 32px;
-  border: 0;
-  border-radius: 8px;
-  background: #e8f2ed;
-  color: #1f6d58;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 32px;
+  height: 32px; border: 0; border-radius: 8px;
+  background: #1f6d58; color: #fff; font-size: 12px; font-weight: 700;
+  line-height: 32px; padding: 0 14px;
 }
 </style>
