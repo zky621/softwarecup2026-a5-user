@@ -182,12 +182,8 @@
     "vite-plugin-vue-devtools": "^8.0.5",
     "vue-tsc": "^3.0.6"
   },
-  "pnpm": {
-    "overrides": {
-      "unconfig": "7.3.2"
-    }
-  },
   "overrides": {
+    "bin-wrapper": "npm:bin-wrapper-china",
     "unconfig": "7.3.2"
   },
   "resolutions": {

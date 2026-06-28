@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { getSessionId } from '@/api/scenic'
+import { createSession, getSessionId } from '@/api/scenic'
 
 definePage({
   style: {
@@ -32,7 +32,15 @@ async function submit() {
   }
   submitting.value = true
 
-  const sessionId = getSessionId()
+  let sessionId = getSessionId()
+  if (!sessionId) {
+    try {
+      sessionId = await createSession()
+    }
+    catch {
+      sessionId = null
+    }
+  }
   if (sessionId) {
     const { submitFeedback } = await import('@/api/scenic')
     const ok = await submitFeedback(sessionId, {
@@ -42,14 +50,13 @@ async function submit() {
     if (ok) {
       submitted.value = true
       uni.showToast({ title: '提交成功，感谢您的反馈', icon: 'success' })
-    } else {
+    }
+    else {
       uni.showToast({ title: '提交失败，请重试', icon: 'none' })
     }
-  } else {
-    // 模拟提交
-    await new Promise(r => setTimeout(r, 600))
-    submitted.value = true
-    uni.showToast({ title: '提交成功', icon: 'success' })
+  }
+  else {
+    uni.showToast({ title: '当前无法连接服务，反馈未提交', icon: 'none' })
   }
   submitting.value = false
 }
@@ -60,24 +67,34 @@ function goBack() {
 </script>
 
 <template>
-  <view class="page bg-[#f4f7f3] min-h-screen px-4 pb-8 pt-4">
-    <view v-if="submitted" class="panel text-center py-10">
+  <view class="page min-h-screen bg-[#f4f7f3] px-4 pb-8 pt-4">
+    <view v-if="submitted" class="panel py-10 text-center">
       <view class="i-carbon-checkmark-filled text-48px text-[#1f6d58]" />
-      <view class="mt-4 text-18px text-[#17362e] font-800">感谢您的反馈</view>
-      <view class="mt-2 text-13px text-[#66756f]">我们会认真处理您的问题</view>
-      <button class="mt-6 submit-btn max-w-200" @click="goBack">返回</button>
+      <view class="mt-4 text-18px text-[#17362e] font-800">
+        感谢您的反馈
+      </view>
+      <view class="mt-2 text-13px text-[#66756f]">
+        我们会认真处理您的问题
+      </view>
+      <button class="submit-btn mt-6 max-w-200" @click="goBack">
+        返回
+      </button>
     </view>
 
     <template v-else>
       <view class="panel">
-        <view class="title">反馈与投诉</view>
+        <view class="title">
+          反馈与投诉
+        </view>
         <view class="mt-2 text-13px text-[#66756f]">
           告诉我们您遇到的问题或建议，我们会尽快处理。
         </view>
       </view>
 
       <view class="panel mt-4">
-        <view class="text-15px text-[#17362e] font-700 mb-3">问题类型</view>
+        <view class="mb-3 text-15px text-[#17362e] font-700">
+          问题类型
+        </view>
         <view class="flex flex-wrap gap-2">
           <view
             v-for="t in types" :key="t.value"
@@ -91,23 +108,29 @@ function goBack() {
       </view>
 
       <view class="panel mt-4">
-        <view class="text-15px text-[#17362e] font-700 mb-3">描述</view>
+        <view class="mb-3 text-15px text-[#17362e] font-700">
+          描述
+        </view>
         <textarea
           v-model="form.content"
           class="textarea"
           placeholder="请详细描述您的问题或建议..."
-          maxlength="500"
+          :maxlength="500"
         />
-        <view class="text-right text-12px text-[#66756f] mt-1">{{ form.content.length }}/500</view>
+        <view class="mt-1 text-right text-12px text-[#66756f]">
+          {{ form.content.length }}/500
+        </view>
       </view>
 
       <view class="panel mt-4">
-        <view class="text-15px text-[#17362e] font-700 mb-3">联系方式（选填）</view>
+        <view class="mb-3 text-15px text-[#17362e] font-700">
+          联系方式（选填）
+        </view>
         <input
           v-model="form.contact"
           class="input"
           placeholder="手机号或微信号，方便我们联系您"
-        />
+        >
       </view>
 
       <button class="submit-btn mt-6" :disabled="submitting" @click="submit">
@@ -118,35 +141,77 @@ function goBack() {
 </template>
 
 <style scoped lang="scss">
-.page { min-height: 100vh; }
-.panel {
-  border-radius: 8px; background: #fff; padding: 18px;
-  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
+.page {
+  min-height: 100vh;
 }
-.title { font-size: 18px; font-weight: 800; color: #17362e; }
+.panel {
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
+}
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #17362e;
+}
 
 .type-chip {
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  background: #f4f8f5; color: #66756f;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f4f8f5;
+  color: #66756f;
 }
-.type-chip.active { background: #1f6d58; color: #fff; }
+.type-chip.active {
+  background: #1f6d58;
+  color: #fff;
+}
 
 .textarea {
-  width: 100%; height: 140px; padding: 12px; box-sizing: border-box;
-  border-radius: 8px; background: #f7faf8; font-size: 14px; color: #20372f;
-  resize: none; border: 0; outline: none; line-height: 1.6;
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f7faf8;
+  font-size: 14px;
+  color: #20372f;
+  resize: none;
+  border: 0;
+  outline: none;
+  line-height: 1.6;
 }
 
 .input {
-  width: 100%; height: 40px; padding: 0 12px; box-sizing: border-box;
-  border-radius: 8px; background: #f7faf8; font-size: 14px; color: #20372f;
-  border: 0; outline: none;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f7faf8;
+  font-size: 14px;
+  color: #20372f;
+  border: 0;
+  outline: none;
 }
 
 .submit-btn {
-  width: 100%; display: flex; align-items: center; justify-content: center;
-  height: 48px; border: 0; border-radius: 8px;
-  background: #1f6d58; color: #fff; font-size: 16px; font-weight: 700; line-height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f6d58;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 48px;
 }
-.submit-btn:disabled { opacity: 0.6; }
+.submit-btn:disabled {
+  opacity: 0.6;
+}
 </style>

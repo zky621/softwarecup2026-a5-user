@@ -41,7 +41,8 @@ async function submit() {
   try {
     const locRes = await uni.getLocation({ type: 'gcj02' })
     location = `${locRes[1].latitude},${locRes[1].longitude}`
-  } catch {
+  }
+  catch {
     // 定位失败也能提交
   }
 
@@ -58,11 +59,9 @@ async function submit() {
   if (result) {
     submitted.value = true
     uni.showToast({ title: '求助已发送，请保持通讯畅通', icon: 'success', duration: 3000 })
-  } else {
-    // 模拟提交成功
-    await new Promise(r => setTimeout(r, 800))
-    submitted.value = true
-    uni.showToast({ title: '求助已发送', icon: 'success', duration: 3000 })
+  }
+  else {
+    uni.showToast({ title: '服务暂不可用，请直接拨打应急电话', icon: 'none', duration: 3000 })
   }
 }
 
@@ -72,28 +71,36 @@ function goBack() {
 </script>
 
 <template>
-  <view class="page bg-[#f4f7f3] min-h-screen">
+  <view class="page min-h-screen bg-[#f4f7f3]">
     <!-- 紧急横幅 -->
     <view class="emergency-banner">
       <view class="i-carbon-warning-filled text-32px text-[#c0392b]" />
-      <view class="mt-2 text-20px text-[#c0392b] font-900">紧急求助</view>
-      <view class="mt-1 text-13px text-[#66756f]">如遇突发情况，请选择求助类型并提交</view>
+      <view class="mt-2 text-20px text-[#c0392b] font-900">
+        紧急求助
+      </view>
+      <view class="mt-1 text-13px text-[#66756f]">
+        如遇突发情况，请选择求助类型并提交
+      </view>
     </view>
 
     <view v-if="submitted" class="success-panel">
       <view class="i-carbon-checkmark-filled text-48px text-[#1f6d58]" />
-      <view class="mt-4 text-18px text-[#17362e] font-800">求助已发送</view>
-      <view class="mt-2 text-13px text-[#66756f] text-center leading-5">
+      <view class="mt-4 text-18px text-[#17362e] font-800">
+        求助已发送
+      </view>
+      <view class="mt-2 text-center text-13px text-[#66756f] leading-5">
         工作人员已收到您的求助，请保持手机畅通。<br>紧急情况请直接拨打景区应急电话。
       </view>
       <view class="mt-4 rounded-8px bg-[#fce8e4] px-4 py-3">
         <text class="text-14px text-[#c0392b] font-700">📞 应急电话：0510-8568-6000</text>
       </view>
-      <button class="mt-6 back-btn" @click="goBack">返回</button>
+      <button class="back-btn mt-6" @click="goBack">
+        返回
+      </button>
     </view>
 
     <template v-else>
-      <view class="px-4 mt-4">
+      <view class="mt-4 px-4">
         <!-- SOS 类型选择 -->
         <view class="grid grid-cols-3 gap-3">
           <view
@@ -104,24 +111,28 @@ function goBack() {
             @click="form.type = t.value"
           >
             <view :class="t.icon" class="text-28px" :style="{ color: t.color }" />
-            <view class="mt-2 text-12px font-700" :style="{ color: t.color }">{{ t.label }}</view>
+            <view class="mt-2 text-12px font-700" :style="{ color: t.color }">
+              {{ t.label }}
+            </view>
           </view>
         </view>
 
         <!-- 描述 -->
         <view class="panel mt-4">
-          <view class="text-15px text-[#17362e] font-700 mb-3">情况描述（选填）</view>
+          <view class="mb-3 text-15px text-[#17362e] font-700">
+            情况描述（选填）
+          </view>
           <textarea
             v-model="form.description"
             class="textarea"
             placeholder="请简单描述您遇到的情况..."
-            maxlength="300"
+            :maxlength="300"
           />
         </view>
 
         <!-- 联系方式 -->
         <view class="panel mt-4">
-          <view class="text-15px text-[#17362e] font-700 mb-3">
+          <view class="mb-3 text-15px text-[#17362e] font-700">
             联系方式 <text class="text-[#c0392b]">*</text>
           </view>
           <input
@@ -129,8 +140,8 @@ function goBack() {
             class="input"
             placeholder="手机号码，方便工作人员联系您"
             type="number"
-            maxlength="11"
-          />
+            :maxlength="11"
+          >
           <view class="mt-2 text-12px text-[#c0392b]">
             提交后将自动附带您的当前位置
           </view>
@@ -142,7 +153,7 @@ function goBack() {
           {{ submitting ? '发送中...' : '发送求助' }}
         </button>
 
-        <view class="mt-4 text-center text-12px text-[#66756f] pb-8">
+        <view class="mt-4 pb-8 text-center text-12px text-[#66756f]">
           紧急情况请直接拨打 📞 0510-8568-6000
         </view>
       </view>
@@ -151,31 +162,49 @@ function goBack() {
 </template>
 
 <style scoped lang="scss">
-.page { min-height: 100vh; background: #f4f7f3; }
+.page {
+  min-height: 100vh;
+  background: #f4f7f3;
+}
 
 .emergency-banner {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 28px 20px 20px; background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 20px 20px;
+  background: #fff;
   border-bottom: 1px solid #edf1ee;
 }
 
 .success-panel {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 48px 24px; margin: 20px;
-  background: #fff; border-radius: 8px;
-  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  margin: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
 }
 
 .panel {
-  border-radius: 8px; background: #fff; padding: 18px;
-  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(29, 54, 46, 0.04);
 }
 
 .sos-card {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; height: 88px; border-radius: 12px;
-  background: #fff; border: 2px solid transparent;
-  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 88px;
+  border-radius: 12px;
+  background: #fff;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 12px rgba(29, 54, 46, 0.04);
 }
 
 .sos-card.selected {
@@ -184,27 +213,64 @@ function goBack() {
 }
 
 .textarea {
-  width: 100%; height: 100px; padding: 12px; box-sizing: border-box;
-  border-radius: 8px; background: #f7faf8; font-size: 14px; color: #20372f;
-  resize: none; border: 0; outline: none; line-height: 1.6;
+  width: 100%;
+  height: 100px;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f7faf8;
+  font-size: 14px;
+  color: #20372f;
+  resize: none;
+  border: 0;
+  outline: none;
+  line-height: 1.6;
 }
 
 .input {
-  width: 100%; height: 44px; padding: 0 12px; box-sizing: border-box;
-  border-radius: 8px; background: #f7faf8; font-size: 16px; color: #20372f;
-  border: 0; outline: none;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f7faf8;
+  font-size: 16px;
+  color: #20372f;
+  border: 0;
+  outline: none;
 }
 
 .sos-submit-btn {
-  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
-  height: 52px; border: 0; border-radius: 12px;
-  background: #c0392b; color: #fff; font-size: 18px; font-weight: 800; line-height: 52px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 52px;
 }
-.sos-submit-btn:disabled { opacity: 0.6; }
+.sos-submit-btn:disabled {
+  opacity: 0.6;
+}
 
 .back-btn {
-  width: 200px; height: 44px; display: flex; align-items: center; justify-content: center;
-  border: 0; border-radius: 8px;
-  background: #1f6d58; color: #fff; font-size: 15px; font-weight: 700; line-height: 44px;
+  width: 200px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: #1f6d58;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 44px;
 }
 </style>

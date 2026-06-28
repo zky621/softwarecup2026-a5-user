@@ -11,7 +11,7 @@ definePage({
 })
 
 const scanning = ref(false)
-const result = ref<{ type: string; targetId: string; action: string; name?: string } | null>(null)
+const result = ref<{ type: string, targetId: string, action: string, name?: string } | null>(null)
 const error = ref('')
 
 function startScan() {
@@ -31,10 +31,12 @@ function startScan() {
           result.value = data
           // 根据类型自动跳转
           handleResult(data)
-        } else {
+        }
+        else {
           error.value = '未识别的二维码'
         }
-      } catch {
+      }
+      catch {
         error.value = '二维码解析失败，请重试'
       }
       scanning.value = false
@@ -58,12 +60,14 @@ function startScan() {
   // #endif
 }
 
-function handleResult(data: { type: string; targetId: string; action: string; name?: string }) {
+function handleResult(data: { type: string, targetId: string, action: string, name?: string }) {
   if (data.action === 'guide' || data.type === 'spot') {
     uni.navigateTo({ url: `/pages/audio/audio` })
-  } else if (data.action === 'verify' || data.type === 'ticket') {
+  }
+  else if (data.action === 'verify' || data.type === 'ticket') {
     uni.navigateTo({ url: `/pages/ticket/ticket` })
-  } else if (data.action === 'queue') {
+  }
+  else if (data.action === 'queue') {
     uni.navigateTo({ url: `/pages/queue/index` })
   }
 }
@@ -76,7 +80,9 @@ function goBack() {
 <template>
   <view class="scan-page">
     <view class="scan-header">
-      <button class="back-btn" @click="goBack">◀</button>
+      <button class="back-btn" @click="goBack">
+        ◀
+      </button>
       <text class="text-17px text-white font-800">扫码</text>
       <view style="width:36px" />
     </view>
@@ -93,7 +99,7 @@ function goBack() {
         </view>
       </view>
 
-      <text class="text-14px text-white/82 mt-4 text-center">
+      <text class="mt-4 text-center text-14px text-white/82">
         将二维码置于框内，自动识别
       </text>
 
@@ -108,26 +114,26 @@ function goBack() {
 
       <!-- 按钮 -->
       <button class="scan-btn mt-10" :disabled="scanning" @click="startScan">
-        <view v-if="scanning" class="i-carbon-loading text-22px animate-spin" />
+        <view v-if="scanning" class="i-carbon-loading animate-spin text-22px" />
         <view v-else class="i-carbon-qr-code text-22px" />
         <text>{{ scanning ? '识别中...' : '开始扫码' }}</text>
       </button>
 
       <!-- 快捷选项 -->
       <view class="mt-8 w-full px-8">
-        <text class="text-12px text-white/50 block text-center mb-3">也可以手动输入</text>
-        <view class="flex gap-3 justify-center">
+        <text class="mb-3 block text-center text-12px text-white/50">也可以手动输入</text>
+        <view class="flex justify-center gap-3">
           <view class="quick-chip" @click="startScan">
             <view class="i-carbon-camera text-18px" />
-            <text class="text-12px mt-1">景点码</text>
+            <text class="mt-1 text-12px">景点码</text>
           </view>
           <view class="quick-chip" @click="startScan">
             <view class="i-carbon-ticket text-18px" />
-            <text class="text-12px mt-1">票务码</text>
+            <text class="mt-1 text-12px">票务码</text>
           </view>
           <view class="quick-chip" @click="startScan">
             <view class="i-carbon-event text-18px" />
-            <text class="text-12px mt-1">活动码</text>
+            <text class="mt-1 text-12px">活动码</text>
           </view>
         </view>
       </view>
@@ -159,7 +165,7 @@ function goBack() {
   justify-content: center;
   border-radius: 50%;
   border: 0;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: 14px;
 }
@@ -195,10 +201,26 @@ function goBack() {
   border-style: solid;
 }
 
-.corner.tl { top: 0; left: 0; border-width: 4px 0 0 4px; }
-.corner.tr { top: 0; right: 0; border-width: 4px 4px 0 0; }
-.corner.bl { bottom: 0; left: 0; border-width: 0 0 4px 4px; }
-.corner.br { bottom: 0; right: 0; border-width: 0 4px 4px 0; }
+.corner.tl {
+  top: 0;
+  left: 0;
+  border-width: 4px 0 0 4px;
+}
+.corner.tr {
+  top: 0;
+  right: 0;
+  border-width: 4px 4px 0 0;
+}
+.corner.bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 4px 4px;
+}
+.corner.br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 4px 4px 0;
+}
 
 .scan-line {
   position: absolute;
@@ -206,14 +228,20 @@ function goBack() {
   right: 12px;
   height: 2px;
   background: #1f6d58;
-  box-shadow: 0 0 12px rgba(31,109,88,0.6);
+  box-shadow: 0 0 12px rgba(31, 109, 88, 0.6);
   animation: scanMove 2.4s linear infinite;
 }
 
 @keyframes scanMove {
-  0% { top: 12px; }
-  50% { top: calc(100% - 12px); }
-  100% { top: 12px; }
+  0% {
+    top: 12px;
+  }
+  50% {
+    top: calc(100% - 12px);
+  }
+  100% {
+    top: 12px;
+  }
 }
 
 .scan-btn {
@@ -244,7 +272,7 @@ function goBack() {
   width: 80px;
   height: 72px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
 }
 </style>

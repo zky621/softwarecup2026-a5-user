@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import { getSpots, getNotices, getEvents, getRoutes, type SpotItem, type NoticeItem, type EventItem, type RouteItem, createSession } from '@/api/scenic'
+import { createSession, getEvents, getNotices, getRoutes, getSpots } from '@/api/scenic'
+import type { EventItem, NoticeItem, RouteItem, SpotItem } from '@/api/scenic'
 
 defineOptions({
   name: 'Home',
@@ -95,7 +96,7 @@ function go(url: string) {
       <view v-if="notices.length" class="mt-4">
         <view
           v-for="n in notices" :key="n.id"
-          class="rounded-8px px-3 py-2 mb-2"
+          class="mb-2 rounded-8px px-3 py-2"
           :class="n.type === 'warning' ? 'bg-[rgba(255,200,50,0.2)]' : 'bg-white/12'"
         >
           <text class="text-12px font-600">{{ n.type === 'warning' ? '⚠️ ' : '📢 ' }}{{ n.title }}</text>
@@ -234,7 +235,7 @@ function go(url: string) {
             {{ ev.name }}
           </view>
           <view class="mt-1 text-12px text-[#66756f]">
-            {{ ev.time || '' }} {{ ev.description ? '· ' + ev.description : '' }}
+            {{ ev.time || '' }} {{ ev.description ? `· ${ev.description}` : '' }}
           </view>
         </view>
       </view>

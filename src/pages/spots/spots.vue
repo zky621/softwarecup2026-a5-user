@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import { getSpots, type SpotItem } from '@/api/scenic'
+import { getSpots } from '@/api/scenic'
+import type { SpotItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -16,11 +17,13 @@ const loading = ref(true)
 
 onMounted(async () => {
   const data = await getSpots({ limit: 50 })
-  spots.value = data.length ? data : [
-    { id: 'demo-1', name: '灵山大佛', summary: '世界最高露天青铜释迦牟尼立像', tags: ['必游'] },
-    { id: 'demo-2', name: '九龙灌浴', summary: '大型音乐动态群雕表演', tags: ['演出'] },
-    { id: 'demo-3', name: '梵宫', summary: '佛教艺术殿堂，世界佛教论坛永久会址', tags: ['室内'] },
-  ]
+  spots.value = data.length
+    ? data
+    : [
+        { id: 'demo-1', name: '灵山大佛', summary: '世界最高露天青铜释迦牟尼立像', tags: ['必游'] },
+        { id: 'demo-2', name: '九龙灌浴', summary: '大型音乐动态群雕表演', tags: ['演出'] },
+        { id: 'demo-3', name: '梵宫', summary: '佛教艺术殿堂，世界佛教论坛永久会址', tags: ['室内'] },
+      ]
   loading.value = false
 })
 
@@ -75,13 +78,19 @@ function go(url: string) {
 </template>
 
 <style scoped lang="scss">
-.page { min-height: 100vh; }
+.page {
+  min-height: 100vh;
+}
 .header {
-  border-radius: 8px; background: #fff; padding: 18px;
-  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
 }
 .card {
-  border-radius: 8px; background: #fff; padding: 16px;
-  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(29, 54, 46, 0.04);
 }
 </style>

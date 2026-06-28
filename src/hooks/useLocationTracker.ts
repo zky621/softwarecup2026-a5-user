@@ -15,7 +15,8 @@ const isTracking = ref(false)
 /** 开始定时上报位置 */
 export function useLocationTracker() {
   onShow(() => {
-    if (timer) return
+    if (timer)
+      return
     startTracking()
   })
 
@@ -28,7 +29,8 @@ export function useLocationTracker() {
 
 /** 主动启动追踪 */
 export function startTracking() {
-  if (timer) return
+  if (timer)
+    return
   isTracking.value = true
 
   // 立即上报一次
@@ -51,7 +53,8 @@ export function stopTracking() {
 
 async function reportOnce() {
   const sessionId = getSessionId()
-  if (!sessionId) return
+  if (!sessionId)
+    return
 
   try {
     const res = await uni.getLocation({
@@ -63,7 +66,8 @@ async function reportOnce() {
       // 静默上报，失败不重要
       reportLocation(sessionId, latitude, longitude).catch(() => {})
     }
-  } catch {
+  }
+  catch {
     // 定位失败不阻塞
   }
 }

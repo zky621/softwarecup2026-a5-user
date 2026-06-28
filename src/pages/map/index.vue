@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { getMapPOIs, getMapLayers, type MapPOI } from '@/api/scenic'
+import { getMapLayers, getMapPOIs } from '@/api/scenic'
+import type { MapPOI } from '@/api/scenic'
 
 definePage({
   style: {
@@ -30,8 +31,9 @@ const gotLocation = ref(false)
 
 // 筛选后的 POI
 const filteredPOIs = computed(() => {
-  if (activeFilter.value === '全部') return pois.value
-  const map: Record<string, string> = { '景点': 'spot', '设施': 'service', '出入口': 'entrance', '关闭区域': 'danger' }
+  if (activeFilter.value === '全部')
+    return pois.value
+  const map: Record<string, string> = { 景点: 'spot', 设施: 'service', 出入口: 'entrance', 关闭区域: 'danger' }
   const type = map[activeFilter.value]
   return pois.value.filter(p => p.type === type)
 })
@@ -97,7 +99,8 @@ onMounted(async () => {
 function onMarkerTap(e: any) {
   const { markerId } = e.detail
   const idx = markerId - 1
-  if (idx < 0 || idx >= filteredPOIs.value.length) return
+  if (idx < 0 || idx >= filteredPOIs.value.length)
+    return
   const poi = filteredPOIs.value[idx]
   if (poi) {
     selectedPOI.value = poi
@@ -111,7 +114,8 @@ function closePanel() {
 }
 
 function goToSpot() {
-  if (!selectedPOI.value) return
+  if (!selectedPOI.value)
+    return
   uni.navigateTo({ url: `/pages/spots/spots` })
 }
 
@@ -160,7 +164,7 @@ function getMockPOIs(): MapPOI[] {
         :longitude="centerLng"
         :markers="markers"
         :show-location="gotLocation"
-        scale="16"
+        :scale="16"
         class="map-inner"
         @markertap="onMarkerTap"
       />
@@ -181,9 +185,15 @@ function getMockPOIs(): MapPOI[] {
               {{ selectedPOI.description || typeLabel(selectedPOI.type) }}
             </view>
           </view>
-          <view v-if="selectedPOI.type === 'spot'" class="poi-badge">景点</view>
-          <view v-else-if="selectedPOI.type === 'danger'" class="poi-badge danger">⚠️ 关闭</view>
-          <view v-else class="poi-badge">{{ selectedPOI.type }}</view>
+          <view v-if="selectedPOI.type === 'spot'" class="poi-badge">
+            景点
+          </view>
+          <view v-else-if="selectedPOI.type === 'danger'" class="poi-badge danger">
+            ⚠️ 关闭
+          </view>
+          <view v-else class="poi-badge">
+            {{ selectedPOI.type }}
+          </view>
         </view>
         <view class="mt-4 flex gap-2">
           <button class="action-btn primary" @click="goToSpot">
@@ -241,7 +251,7 @@ function typeLabel(type: string): string {
   border-radius: 20px;
   background: #fff;
   padding: 0 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .filter-bar {
@@ -262,9 +272,9 @@ function typeLabel(type: string): string {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
   color: #66756f;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .filter-chip.active {
@@ -290,7 +300,7 @@ function typeLabel(type: string): string {
   z-index: 20;
   border-radius: 16px 16px 0 0;
   background: #fff;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .poi-panel-handle {
@@ -354,7 +364,7 @@ function typeLabel(type: string): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   z-index: 5;
 }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { questions } from '../shared/guide-data'
 import { createSession, getSessionId, sendMessage } from '@/api/scenic'
 
@@ -22,14 +22,17 @@ const messages = ref<Message[]>([
 ])
 const sending = ref(false)
 const sessionReady = ref(false)
+const usingFallback = ref(false)
 
 onMounted(async () => {
   // 初始化会话
   if (!getSessionId()) {
     try {
       await createSession()
-    } catch {
-      console.warn('[Ask] session init failed, using local mock')
+    }
+    catch {
+      usingFallback.value = true
+      console.warn('[Ask] session init failed, using local fallback')
     }
   }
   sessionReady.value = true
@@ -44,7 +47,8 @@ function pickQuestion(question: string) {
 
 async function sendQuestion() {
   const text = draft.value.trim()
-  if (!text || sending.value) return
+  if (!text || sending.value)
+    return
 
   sending.value = true
   messages.value = [...messages.value, { role: 'visitor', text }]
@@ -61,20 +65,25 @@ async function sendQuestion() {
     }
   }
 
-  // Fallback: 本地简单回复
+  usingFallback.value = true
   let fallback = ''
   if (text.includes('老人') || text.includes('小孩')) {
     fallback = '建议走轻松路线：入口 → 灵山大佛 → 九龙灌浴 → 梵宫。台阶多的地方慢一点，中途休息几次。'
-  } else if (text.includes('表演') || text.includes('演出')) {
+  }
+  else if (text.includes('表演') || text.includes('演出')) {
     fallback = '今天的演出信息可以在"服务 → 看演出"里查看，建议提前 15 分钟到场。'
-  } else if (text.includes('休息') || text.includes('厕所') || text.includes('卫生间')) {
+  }
+  else if (text.includes('休息') || text.includes('厕所') || text.includes('卫生间')) {
     fallback = '最近的休息区在广场右侧，旁边有卫生间和饮水点。'
-  } else if (text.includes('门票') || text.includes('价格') || text.includes('多少钱')) {
+  }
+  else if (text.includes('门票') || text.includes('价格') || text.includes('多少钱')) {
     fallback = '成人票 210 元，学生票 105 元，70 岁以上免票。建议通过官方小程序提前购票。'
-  } else {
+  }
+  else {
     fallback = '这个问题我需要查一下资料才能回答。你可以试试问路线、演出时间或景点介绍。'
   }
-  messages.value = [...messages.value, { role: 'guide', text: fallback }]
+  messages.value = [...messages.value, { role: 'guide', text: `（本地兜底）${fallback}` }]
+  uni.showToast({ title: '后端问答暂不可用，已使用本地兜底', icon: 'none' })
   sending.value = false
 }
 </script>
@@ -88,14 +97,17 @@ async function sendQuestion() {
       <view class="mt-2 text-13px text-[#66756f] leading-5">
         可以直接问路线、景点、演出、吃饭和附近设施。
       </view>
+      <view v-if="usingFallback" class="mt-3 rounded-8px bg-[#fff7e6] px-3 py-2 text-12px text-[#80602f] leading-5">
+        当前后端问答未连通，回答会标注为本地兜底，不作为真实 RAG 结果。
+      </view>
       <view class="ask-box mt-4" @click="sendQuestion">
         <input
           v-model="draft"
-          class="flex-1 text-14px text-[#20372f] outline-none bg-transparent"
+          class="flex-1 bg-transparent text-14px text-[#20372f] outline-none"
           placeholder="例如：下一场演出在哪里看？"
-          :confirm-type="'send'"
+          confirm-type="send"
           @confirm="sendQuestion"
-        />
+        >
         <view class="i-carbon-send text-20px text-[#2b765f]" @click="sendQuestion" />
       </view>
     </view>

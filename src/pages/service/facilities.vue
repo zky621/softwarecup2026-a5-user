@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { getServices, type ServiceItem } from '@/api/scenic'
+import { getServices } from '@/api/scenic'
+import type { ServiceItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -25,14 +26,16 @@ onMounted(async () => {
       { id: 'demo-3', name: '休息区', type: '休息', description: '有座椅和饮水点' },
       { id: 'demo-4', name: '餐饮点', type: '餐饮', description: '简餐、饮品、儿童餐' },
     ]
-  } else {
+  }
+  else {
     allFacilities.value = data
   }
   loading.value = false
 })
 
 const visibleFacilities = computed(() => {
-  if (activeFilter.value === '全部') return allFacilities.value
+  if (activeFilter.value === '全部')
+    return allFacilities.value
   return allFacilities.value.filter(
     item => item.name.includes(activeFilter.value) || item.type?.includes(activeFilter.value),
   )
@@ -84,32 +87,63 @@ const visibleFacilities = computed(() => {
 </template>
 
 <style scoped lang="scss">
-.page { min-height: 100vh; }
+.page {
+  min-height: 100vh;
+}
 
 .panel {
-  border-radius: 8px; background: #fff; padding: 18px;
-  box-shadow: 0 10px 22px rgba(29,54,46,0.07);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 10px 22px rgba(29, 54, 46, 0.07);
 }
-.title { font-size: 18px; font-weight: 800; color: #17362e; }
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #17362e;
+}
 
-.chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip {
-  padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
-  background: #f4f8f5; color: #66756f;
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.chip.active { background: #1f6d58; color: #fff; }
+.chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f4f8f5;
+  color: #66756f;
+}
+.chip.active {
+  background: #1f6d58;
+  color: #fff;
+}
 
 .facility {
-  display: flex; gap: 12px; align-items: center;
-  border-radius: 8px; background: #fff; padding: 14px;
-  box-shadow: 0 4px 12px rgba(29,54,46,0.04);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(29, 54, 46, 0.04);
 }
 .distance {
-  font-size: 12px; color: #66756f; white-space: nowrap;
+  font-size: 12px;
+  color: #66756f;
+  white-space: nowrap;
 }
 .go-btn {
-  height: 32px; border: 0; border-radius: 8px;
-  background: #1f6d58; color: #fff; font-size: 12px; font-weight: 700;
-  line-height: 32px; padding: 0 14px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f6d58;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 32px;
+  padding: 0 14px;
 }
 </style>

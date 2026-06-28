@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import FgTabbar from '@/tabbar/index.vue'
 import { isPageTabbar } from './tabbar/store'

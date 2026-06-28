@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { getSpots, type SpotItem } from '@/api/scenic'
+import { getSpots } from '@/api/scenic'
+import type { SpotItem } from '@/api/scenic'
 
 definePage({
   style: {
@@ -17,11 +18,13 @@ const loading = ref(true)
 
 onMounted(async () => {
   const data = await getSpots({ limit: 10 })
-  spots.value = data.length ? data : [
-    { id: 'demo-1', name: '灵山大佛', summary: '世界最高露天青铜立像' },
-    { id: 'demo-2', name: '九龙灌浴', summary: '大型音乐动态群雕' },
-    { id: 'demo-3', name: '梵宫', summary: '佛教艺术殿堂' },
-  ] as SpotItem[]
+  spots.value = data.length
+    ? data
+    : [
+        { id: 'demo-1', name: '灵山大佛', summary: '世界最高露天青铜立像' },
+        { id: 'demo-2', name: '九龙灌浴', summary: '大型音乐动态群雕' },
+        { id: 'demo-3', name: '梵宫', summary: '佛教艺术殿堂' },
+      ] as SpotItem[]
   currentId.value = spots.value[0]?.id || ''
   loading.value = false
 })
@@ -40,7 +43,9 @@ function togglePlay() {
 
 <template>
   <view v-if="loading" class="page bg-[#17372f] px-4 pb-8 pt-4 text-white">
-    <view class="mt-20 text-center text-14px opacity-72">加载中...</view>
+    <view class="mt-20 text-center text-14px opacity-72">
+      加载中...
+    </view>
   </view>
   <view v-else class="page bg-[#17372f] px-4 pb-8 pt-4 text-white">
     <view class="player">

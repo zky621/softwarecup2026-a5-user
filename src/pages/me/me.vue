@@ -1,5 +1,8 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia'
+import { ref } from 'vue'
 import { history, preferences } from '../shared/guide-data'
+import { useTokenStore, useUserStore } from '@/store'
 
 definePage({
   style: {
@@ -49,8 +52,40 @@ const services: ServiceItem[] = [
   },
 ]
 
+const tokenStore = useTokenStore()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const { hasLogin } = storeToRefs(tokenStore)
+const loginLoading = ref(false)
+
 function go(url: string) {
   uni.navigateTo({ url })
+}
+
+async function loginWithMiniProgram() {
+  if (loginLoading.value) {
+    return
+  }
+
+  // #ifdef MP-WEIXIN
+  loginLoading.value = true
+  try {
+    await tokenStore.wxLogin()
+  }
+  finally {
+    loginLoading.value = false
+  }
+  return
+  // #endif
+
+  // #ifndef MP-WEIXIN
+  uni.showToast({ title: '请在微信小程序中使用登录', icon: 'none' })
+  // #endif
+}
+
+async function logout() {
+  await tokenStore.logout()
+  uni.showToast({ title: '已退出登录', icon: 'success' })
 }
 </script>
 
@@ -58,17 +93,17 @@ function go(url: string) {
   <view class="me-page min-h-screen bg-[#f4f7f3] px-4 pb-26 pt-4">
     <view class="profile-card">
       <view class="flex items-center gap-4">
-        <image src="/static/images/default-avatar.png" mode="aspectFill" class="avatar" />
+        <image :src="hasLogin ? userInfo.avatar : '/static/images/default-avatar.png'" mode="aspectFill" class="avatar" />
         <view class="min-w-0 flex-1">
           <view class="text-20px text-[#17362e] font-800">
-            临时游客
+            {{ hasLogin ? (userInfo.nickname || userInfo.username || '已登录游客') : '临时游客' }}
           </view>
           <view class="mt-1 text-13px text-[#66756f]">
-            登录后保存行程和提问记录
+            {{ hasLogin ? '行程、票券和提问记录将持续保存' : '登录后保存行程和提问记录' }}
           </view>
         </view>
-        <button class="login-btn">
-          登录
+        <button class="login-btn" :disabled="loginLoading" @click="hasLogin ? logout() : loginWithMiniProgram()">
+          {{ hasLogin ? '退出' : (loginLoading ? '登录中...' : '微信登录') }}
         </button>
       </view>
       <view class="grid grid-cols-3 mt-5 gap-3">
@@ -174,7 +209,7 @@ function go(url: string) {
           SOS · 医疗 · 走失 · 安保
         </view>
       </view>
-      <view class="i-carbon-chevron-right text-18px text-[#c0392b] ml-auto" />
+      <view class="i-carbon-chevron-right ml-auto text-18px text-[#c0392b]" />
     </view>
 
     <view class="section mt-5">
@@ -319,6 +354,6 @@ function go(url: string) {
   padding: 16px 18px;
   margin-left: 16px;
   margin-right: 16px;
-  box-shadow: 0 4px 12px rgba(192,57,43,0.1);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.1);
 }
 </style>

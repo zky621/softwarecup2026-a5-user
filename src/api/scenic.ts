@@ -8,13 +8,15 @@
  * → 用 unwrapItems() 提取数组
  */
 
-import { httpGet, httpPost, httpPut } from '@/http/http'
+import { httpGet, httpPost } from '@/http/http'
 
 // ── 工具 ──────────────────────────────────────────────────────────
 
 function unwrapItems<T>(data: any): T[] {
-  if (Array.isArray(data)) return data as T[]
-  if (data && typeof data === 'object' && Array.isArray(data.items)) return data.items as T[]
+  if (Array.isArray(data))
+    return data as T[]
+  if (data && typeof data === 'object' && Array.isArray(data.items))
+    return data.items as T[]
   return []
 }
 
@@ -115,7 +117,8 @@ let _sessionId: string | null = null
 export async function createSession(): Promise<string> {
   const data = await httpPost<any>('/sessions', { scenicId: 'SA-001' })
   const id = data?.id || data?.sessionId || ''
-  if (id) _sessionId = id
+  if (id)
+    _sessionId = id
   return id
 }
 
@@ -140,7 +143,8 @@ export async function getSpotDetail(spotId: string): Promise<SpotItem | null> {
   try {
     const data = await httpGet<any>(`/spots/${spotId}`)
     return data || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -185,7 +189,8 @@ export interface WeatherInfo {
 export async function getWeather(): Promise<WeatherInfo | null> {
   try {
     return await httpGet<WeatherInfo>('/weather') || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -201,7 +206,8 @@ export async function takeQueueTicket(queueId: string): Promise<QueueTicket | nu
   try {
     const data = await httpPost<any>('/queue/tickets', { queueId })
     return data || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -210,7 +216,8 @@ export async function getQueueTicket(ticketId: string): Promise<QueueTicket | nu
   try {
     const data = await httpGet<any>(`/queue/tickets/${ticketId}`)
     return data || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -219,7 +226,8 @@ export async function cancelQueueTicket(ticketId: string): Promise<boolean> {
   try {
     await httpPost<any>(`/queue/tickets/${ticketId}/cancel`, {})
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -235,16 +243,18 @@ export async function getTicketOrders(): Promise<TicketOrder[]> {
   try {
     const data = await httpGet<any>('/tickets/orders')
     return unwrapItems<TicketOrder>(data)
-  } catch {
+  }
+  catch {
     return []
   }
 }
 
-export async function verifyTicket(code: string): Promise<{ valid: boolean; message: string } | null> {
+export async function verifyTicket(code: string): Promise<{ valid: boolean, message: string } | null> {
   try {
     const data = await httpPost<any>('/tickets/verify', { code })
     return data || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -257,13 +267,14 @@ export interface AiAnswer {
   answer?: string
   source?: string
   confidence?: string
-  citations?: Array<{ text: string; source: string }>
+  citations?: Array<{ text: string, source: string }>
 }
 
 export async function sendMessage(sessionId: string, text: string): Promise<AiAnswer | null> {
   try {
     const data = await httpPost<any>(`/sessions/${sessionId}/messages`, { role: 'user', text })
-    if (!data) return null
+    if (!data)
+      return null
     // 可能返回消息数组、单个消息对象、或带 answer 字段的对象
     const last = Array.isArray(data)
       ? data[data.length - 1]
@@ -271,7 +282,8 @@ export async function sendMessage(sessionId: string, text: string): Promise<AiAn
         ? data.items[data.items.length - 1]
         : data
     return last || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -281,11 +293,11 @@ export async function sendMessage(sessionId: string, text: string): Promise<AiAn
 export interface MapPOI {
   id: string
   name: string
-  type: string       // spot | facility | entrance | exit | danger | service
+  type: string // spot | facility | entrance | exit | danger | service
   latitude: number
   longitude: number
   description?: string
-  status?: string     // open | closed | busy
+  status?: string // open | closed | busy
 }
 
 export async function getMapPOIs(): Promise<MapPOI[]> {
@@ -297,7 +309,8 @@ export async function getMapLayers(): Promise<any[]> {
   try {
     const data = await httpGet<any>('/map/layers')
     return unwrapItems<any>(data)
-  } catch {
+  }
+  catch {
     return []
   }
 }
@@ -322,7 +335,8 @@ export async function reportLocation(
       nearSpotId: nearSpotId || null,
     })
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -330,9 +344,9 @@ export async function reportLocation(
 // ── 二维码 ────────────────────────────────────────────────────────
 
 export interface QRCodeResult {
-  type: string      // spot | ticket | event | device
+  type: string // spot | ticket | event | device
   targetId: string
-  action: string    // guide | verify | queue
+  action: string // guide | verify | queue
   data?: any
 }
 
@@ -340,7 +354,8 @@ export async function resolveQRCode(code: string): Promise<QRCodeResult | null> 
   try {
     const data = await httpPost<any>('/qrcode/resolve', { code })
     return data || null
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -349,12 +364,13 @@ export async function resolveQRCode(code: string): Promise<QRCodeResult | null> 
 
 export async function submitFeedback(
   sessionId: string,
-  data: { type?: string; content: string; image?: string; location?: string },
+  data: { type?: string, content: string, image?: string, location?: string },
 ): Promise<boolean> {
   try {
     await httpPost<any>(`/sessions/${sessionId}/feedback`, data)
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -362,11 +378,12 @@ export async function submitFeedback(
 // ── 应急 ──────────────────────────────────────────────────────────
 
 export async function submitEmergency(
-  data: { type: string; description: string; contact: string; location?: string },
+  data: { type: string, description: string, contact: string, location?: string },
 ): Promise<{ id?: string } | null> {
   try {
     return await httpPost<any>('/emergency/requests', data) || null
-  } catch {
+  }
+  catch {
     return null
   }
 }

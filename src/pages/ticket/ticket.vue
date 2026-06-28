@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import { getTicketOrders, getTicketProducts, type TicketOrder, type TicketProduct } from '@/api/scenic'
+import { getTicketOrders, getTicketProducts } from '@/api/scenic'
+import type { TicketOrder, TicketProduct } from '@/api/scenic'
 
 definePage({
   style: {
@@ -83,14 +84,16 @@ const currentOrder = ref(orders.value[0] || null)
         </view>
       </view>
       <view v-if="products.length" class="panel mt-4">
-        <view class="text-15px text-[#17362e] font-800 mb-3">票种一览</view>
+        <view class="mb-3 text-15px text-[#17362e] font-800">
+          票种一览
+        </view>
         <view v-for="p in products" :key="p.id" class="row">
           <text>{{ p.name }}</text>
           <text>¥{{ p.price }}</text>
         </view>
       </view>
       <view class="panel mt-4">
-        <view class="text-13px text-[#66756f] text-center py-3">
+        <view class="py-3 text-center text-13px text-[#66756f]">
           <text>🎫 通过官方小程序购票后，订单将自动显示在此处</text>
         </view>
       </view>
